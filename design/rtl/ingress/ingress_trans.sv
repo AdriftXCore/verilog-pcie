@@ -15,11 +15,11 @@ Modified by     :
 Modified date   : 
 Version         : 
 Description     : 
-*************************************Confidential. Do NOT disclose****************************/
+******************************Licensed under the GPL-3.0 License******************************/
 module ingress_trans  #(
     //localparam
     parameter FIFO_WIDTH = `PCIE_DATA_WIDTH + `PCIE_DATA_KW + 1 + 1,
-    parameter FIFO_DEPTH = 4
+    parameter FIFO_DEPTH = 2
 )
 (
     /********* system clock / reset *********/
@@ -68,6 +68,12 @@ logic                               add_cnt_axi             ;
 logic                               end_cnt_axi             ;
 logic [32                   -1:0]   rx_packet_len           ;
 
+logic [`PCIE_DATA_WIDTH     -1:0]   fifo_axis_rx_tdata_be   ;
+
+generate for(genvar i = 0;i < `PCIE_DATA_WIDTH/32;i = i + 1)begin
+    assign fifo_axis_rx_tdata_be[i*32 +: 32] = {s_axis_rx_tdata[0 +:8],s_axis_rx_tdata[8 +:8],s_axis_rx_tdata[16 +:8],s_axis_rx_tdata[24 +: 8]};
+end
+
 tinyfifo 
 #(
     .DW     (`FIFO_WIDTH    ),
@@ -84,7 +90,7 @@ u_tinyfifo(
     .empty      (tinyfifo_empty ) 
 );
 
-assign tinyfifo_data_i = {s_axis_rx_tdata,s_axis_rx_tkeep,s_axis_rx_tlast,s_axis_rx_tvalid};
+assign tinyfifo_data_i = {fifo_axis_rx_tdata_be,s_axis_rx_tkeep,s_axis_rx_tlast,s_axis_rx_tvalid};
 assign s_axis_rx_tready = tinyfifo_full;
 assign tinyfifo_push   = ~tinyfifo_full;
 assign tinyfifo_pop    = ~tinyfifo_empty & m_axis_tx_tready;

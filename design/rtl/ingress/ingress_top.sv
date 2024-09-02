@@ -17,7 +17,7 @@ Modified by     :
 Modified date   : 
 Version         : 
 Description     : 
-*************************************Confidential. Do NOT disclose****************************/
+******************************Licensed under the GPL-3.0 License******************************/
 
 module ingress_top(
     /********* system clock / reset *********/

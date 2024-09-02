@@ -40,7 +40,7 @@ Modified by     :
 Modified date   : 
 Version         : 
 Description     : 
-*************************************Confidential. Do NOT disclose****************************/
+******************************Licensed under the GPL-3.0 License******************************/
 module ingress_parse(
     /********* system clock / reset *********/
     input   wire                                clk                 ,   //system clock
@@ -63,7 +63,6 @@ module ingress_parse(
     input   logic                               s_axis_rx_tvalid    ,
     input   logic [`XIL_RX_USER_W       -1:0]   s_axis_rx_tuser      
 );
-
 
 
 
