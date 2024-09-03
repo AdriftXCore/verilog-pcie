@@ -47,24 +47,73 @@ module ingress_parse(
     input   wire                                `rst                ,   //reset signal
 
     /*********  *********/
-    output  logic                               s_axis_tx_tready    ,
-    input   logic [`PCIE_DATA_WIDTH     -1:0]   s_axis_tx_tdata     ,
-    input   logic [`PCIE_DATA_KW        -1:0]   s_axis_tx_tkeep     ,
-    input   logic                               s_axis_tx_sop       ,
-    input   logic                               s_axis_tx_eop       ,
-    input   logic                               s_axis_tx_tvalid    ,
-    input   logic [`PCIE_TUSER_W        -1:0]   s_axis_tx_tuser     ,
-
-    /*********  *********/
     output  logic                               s_axis_rx_tready    ,
     input   logic [`PCIE_DATA_WIDTH     -1:0]   s_axis_rx_tdata     ,
     input   logic [`PCIE_DATA_KW        -1:0]   s_axis_rx_tkeep     ,
-    input   logic                               s_axis_rx_tlast     ,
+    input   logic                               s_axis_rx_sop       ,
+    input   logic                               s_axis_rx_eop       ,
     input   logic                               s_axis_rx_tvalid    ,
-    input   logic [`XIL_RX_USER_W       -1:0]   s_axis_rx_tuser      
+    input   logic [`PCIE_TUSER_W        -1:0]   s_axis_rx_tuser     ,
+
+    /*********  *********/
+    input   logic                               m_axis_tx_tready    ,
+    output  logic [`PCIE_DATA_WIDTH     -1:0]   m_axis_tx_tdata     ,
+    output  logic [`PCIE_DATA_KW        -1:0]   m_axis_tx_tkeep     ,
+    output  logic                               m_axis_tx_sop       ,
+    output  logic                               m_axis_tx_eop       ,
+    output  logic                               m_axis_tx_tvalid    ,
+    output  logic [`PCIE_TUSER_W        -1:0]   m_axis_tx_tuser     ,
 );
 
+tlp_head_t rx_tlp_head;
+generate 
+if(`PCIE_TUSER_W == 128)begin
+    always_ff @(`rst_block)begin
+        if(`rst)
+            rx_tlp_head.tlp_128b_t.dat[0] <= 'd0;
+        else if(s_axis_rx_tready && s_axis_rx_tvalid && s_axis_rx_sop)
+            rx_tlp_head.tlp_128b_t.dat[0] <= s_axis_rx_tdata;
+    end
+end
+else if(`PCIE_TUSER_W == 64)begin
+    logic [2 -1:0] sop_reg ;
+    logic [2 -1:0] _sop_reg;
 
+    assign _sop_reg = {sop_reg[0],s_axis_rx_sop};
 
+    always_ff @(`rst_block)begin
+        if(`rst)
+            sop_reg <= 'd0;
+        else if(s_axis_rx_tready && s_axis_rx_tvalid)
+            sop_reg <= _sop_reg;
+    end
+
+    always_ff @(`rst_block)begin
+        if(`rst)
+            {rx_tlp_head.tlp_64b_t.dat[1],rx_tlp_head.tlp_64b_t.dat[0]} <= 'd0;
+        else if(|_sop_reg)
+            {rx_tlp_head.tlp_64b_t.dat[1],rx_tlp_head.tlp_64b_t.dat[0]} <= {rx_tlp_head.tlp_64b_t.dat[0],s_axis_rx_tdata};
+    end
+end
+else if(`PCIE_TUSER_W == 32)begin
+    logic [4 -1:0] sop_reg ;
+    logic [4 -1:0] _sop_reg;
+
+    assign _sop_reg = {sop_reg[2:0],s_axis_rx_sop}
+
+    always_ff @(`rst_block)begin
+        if(`rst)
+            sop_reg <= 'd0;
+        else if(s_axis_rx_tready && s_axis_rx_tvalid)
+            sop_reg <= _sop_reg;
+    end
+    always_ff @(`rst_block)begin
+        if(`rst)
+            {rx_tlp_head.tlp_32b_t.dat[3],rx_tlp_head.tlp_32b_t.dat[2],rx_tlp_head.tlp_32b_t.dat[1],rx_tlp_head.tlp_32b_t.dat[0]} <= 'd0;
+        else if(|_sop_reg)
+            {rx_tlp_head.tlp_32b_t.dat[3],rx_tlp_head.tlp_32b_t.dat[2],rx_tlp_head.tlp_32b_t.dat[1],rx_tlp_head.tlp_32b_t.dat[0]} <= {rx_tlp_head.tlp_32b_t.dat[2],rx_tlp_head.tlp_32b_t.dat[1],rx_tlp_head.tlp_32b_t.dat[0],s_axis_rx_tdata};
+    end
+end
+endgenerate
 
 endmodule
