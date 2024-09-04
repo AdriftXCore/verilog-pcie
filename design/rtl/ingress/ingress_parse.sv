@@ -65,55 +65,5 @@ module ingress_parse(
     output  logic [`PCIE_TUSER_W        -1:0]   m_axis_tx_tuser     ,
 );
 
-tlp_head_t rx_tlp_head;
-generate 
-if(`PCIE_TUSER_W == 128)begin
-    always_ff @(`rst_block)begin
-        if(`rst)
-            rx_tlp_head.tlp_128b_t.dat[0] <= 'd0;
-        else if(s_axis_rx_tready && s_axis_rx_tvalid && s_axis_rx_sop)
-            rx_tlp_head.tlp_128b_t.dat[0] <= s_axis_rx_tdata;
-    end
-end
-else if(`PCIE_TUSER_W == 64)begin
-    logic [2 -1:0] sop_reg ;
-    logic [2 -1:0] _sop_reg;
-
-    assign _sop_reg = {sop_reg[0],s_axis_rx_sop};
-
-    always_ff @(`rst_block)begin
-        if(`rst)
-            sop_reg <= 'd0;
-        else if(s_axis_rx_tready && s_axis_rx_tvalid)
-            sop_reg <= _sop_reg;
-    end
-
-    always_ff @(`rst_block)begin
-        if(`rst)
-            {rx_tlp_head.tlp_64b_t.dat[1],rx_tlp_head.tlp_64b_t.dat[0]} <= 'd0;
-        else if(|_sop_reg)
-            {rx_tlp_head.tlp_64b_t.dat[1],rx_tlp_head.tlp_64b_t.dat[0]} <= {rx_tlp_head.tlp_64b_t.dat[0],s_axis_rx_tdata};
-    end
-end
-else if(`PCIE_TUSER_W == 32)begin
-    logic [4 -1:0] sop_reg ;
-    logic [4 -1:0] _sop_reg;
-
-    assign _sop_reg = {sop_reg[2:0],s_axis_rx_sop}
-
-    always_ff @(`rst_block)begin
-        if(`rst)
-            sop_reg <= 'd0;
-        else if(s_axis_rx_tready && s_axis_rx_tvalid)
-            sop_reg <= _sop_reg;
-    end
-    always_ff @(`rst_block)begin
-        if(`rst)
-            {rx_tlp_head.tlp_32b_t.dat[3],rx_tlp_head.tlp_32b_t.dat[2],rx_tlp_head.tlp_32b_t.dat[1],rx_tlp_head.tlp_32b_t.dat[0]} <= 'd0;
-        else if(|_sop_reg)
-            {rx_tlp_head.tlp_32b_t.dat[3],rx_tlp_head.tlp_32b_t.dat[2],rx_tlp_head.tlp_32b_t.dat[1],rx_tlp_head.tlp_32b_t.dat[0]} <= {rx_tlp_head.tlp_32b_t.dat[2],rx_tlp_head.tlp_32b_t.dat[1],rx_tlp_head.tlp_32b_t.dat[0],s_axis_rx_tdata};
-    end
-end
-endgenerate
 
 endmodule
