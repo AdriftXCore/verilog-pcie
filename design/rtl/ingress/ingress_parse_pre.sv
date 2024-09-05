@@ -68,9 +68,19 @@ logic                                       _cpl_valid   ;
 logic                                       _dat_vld     ;
 logic                                       dat_vld      ;
 
-tlp_head_t rx_tlp_head;
+tlp_head_t                                  _rx_tlp_head ;
+tlp_head_t                                  rx_tlp_head  ;
+
+logic                                       is_3dw       ;
 
 assign _dat_vld = s_axis_rx_tready && s_axis_rx_tvalid;
+
+always_ff @(`rst_block)begin
+    if(`rst)
+        dat_vld <= 'd0;
+    else
+        dat_vld <= _dat_vld;
+end
 
 generate 
 if(`PCIE_TUSER_W == 128)begin
@@ -79,11 +89,22 @@ if(`PCIE_TUSER_W == 128)begin
 
     assign _sop_reg = _dat_vld && s_axis_rx_sop;
 
+    assign _rx_tlp_head.tlp_128b_t.dat[0] = s_axis_rx_tdata;
+
     always_ff @(`rst_block)begin
         if(`rst)
-            rx_tlp_head.tlp_128b_t.dat[0] <= 'd0;
+            rx_tlp_head <= 'd0;
         else if(_sop_reg)
-            rx_tlp_head.tlp_128b_t.dat[0] <= s_axis_rx_tdata;
+            rx_tlp_head <= _rx_tlp_head;
+    end
+
+    always_ff @(`rst_block)begin
+        if(`rst)
+            is_3dw <= 'd0;
+        else if((_rx_tlp_head.tlp_h.tlp_fmt == `TLP_4DW) && _sop_reg)
+            is_3dw <= 'd0;
+        else if((_rx_tlp_head.tlp_h.tlp_fmt == `TLP_3DW) && _sop_reg)
+            is_3dw <= 'd1;
     end
 
     always_ff @(`rst_block)begin
@@ -94,7 +115,7 @@ if(`PCIE_TUSER_W == 128)begin
     end
 
     always_comb begin
-        case({rx_tlp_head.tlp_fmt,rx_tlp_head.tlp_type})
+        case({rx_tlp_head.tlp_h.tlp_fmt,rx_tlp_head.tlp_h.tlp_type})
             `TLP_REQ_WD:{cpl_req,rdreq_req,wrreq_req} <= 3'b001;
             `TLP_REQ_RD:{cpl_req,rdreq_req,wrreq_req} <= 3'b010;
             `TLP_CPL_WD:{cpl_req,rdreq_req,wrreq_req} <= 3'b100;
@@ -117,14 +138,59 @@ if(`PCIE_TUSER_W == 128)begin
 
     always_ff @(`rst_block)begin
         if(`rst)begin
+            _wrreq_keep <= 'd0;
+            _rdreq_keep <= 'd0;
+            _cpl_keep   <= 'd0;
+        end
+        else if(_dat_vld)begin
+            _wrreq_keep <= s_axis_rx_tkeep;
+            _rdreq_keep <= s_axis_rx_tkeep;
+            _cpl_keep   <= s_axis_rx_tkeep;
+        end
+    end
+
+    always_ff @(`rst_block)begin
+        if(`rst)begin
             wrreq_data <= 'd0;
             rdreq_data <= 'd0;
             cpl_data   <= 'd0;
         end
+        else if(is_3dw)begin
+            if(sop_reg)begin
+                wrreq_data <= {32'd0,_wrreq_data[3*32 +: 32]};
+                rdreq_data <= {32'd0,_rdreq_data[3*32 +: 32]};
+                cpl_data   <= {32'd0,_cpl_data  [3*32 +: 32]};
+            end
+            else begin
+                wrreq_data <= _wrreq_data;
+                rdreq_data <= _rdreq_data;
+                cpl_data   <= _cpl_data  ;
+            end
+        end
         else begin
-            wrreq_data <= 'd0;
-            rdreq_data <= 'd0;
-            cpl_data   <= 'd0;
+            wrreq_data <= s_axis_rx_tdata;
+            rdreq_data <= s_axis_rx_tdata;
+            cpl_data   <= s_axis_rx_tdata;
+        end
+    end
+
+    always_ff @(`rst_block)begin
+        if(`rst)begin
+            wrreq_keep <= 'd0;
+            rdreq_keep <= 'd0;
+            cpl_keep   <= 'd0;
+        end
+        else if(is_3dw)begin
+            if(sop_reg)begin
+                wrreq_keep <= 16'h000F;
+                rdreq_keep <= 16'h000F;
+                cpl_keep   <= 16'h000F;
+            end
+        end
+        else begin
+            wrreq_keep <= _wrreq_keep;
+            rdreq_keep <= _rdreq_keep;
+            cpl_keep   <= _cpl_keep  ;
         end
     end
 
@@ -144,7 +210,7 @@ if(`PCIE_TUSER_W == 128)begin
     always_ff @(`rst_block)begin
         if(`rst)
             wrreq_valid <= 'd0;
-        else if(wrreq_req && (s_axis_rx_tready && s_axis_rx_tvalid))
+        else if(wrreq_req && dat_vld)
             wrreq_valid <= 'd1;
         else
             wrreq_valid <= 'd0;
@@ -153,7 +219,7 @@ if(`PCIE_TUSER_W == 128)begin
     always_ff @(`rst_block)begin
         if(`rst)
             rdreq_valid <= 'd0;
-        else if(rdreq_req && (s_axis_rx_tready && s_axis_rx_tvalid))
+        else if(rdreq_req && dat_vld)
             rdreq_valid <= 'd1;
         else
             rdreq_valid <= 'd0;
@@ -162,7 +228,7 @@ if(`PCIE_TUSER_W == 128)begin
     always_ff @(`rst_block)begin
         if(`rst)
             cpl_valid <= 'd0;
-        else if(cpl_req && (s_axis_rx_tready && s_axis_rx_tvalid))
+        else if(cpl_req && dat_vld)
             cpl_valid <= 'd1;
         else
             cpl_valid <= 'd0;

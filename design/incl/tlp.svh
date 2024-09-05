@@ -31,6 +31,9 @@
 `define TLP_FMT_REQ_WD      `TLP_FMT_W'b01x
 `define TLP_FMT_REQ_RD      `TLP_FMT_W'b00x
 
+`define TLP_4DW             `TLP_FMT_W'bxx1
+`define TLP_3DW             `TLP_FMT_W'bxx0
+
 `define TLP_CPL_ND          {TLP_FMT_CPL_ND,TLP_TYPE_CPL}
 `define TLP_CPL_WD          {TLP_FMT_CPL_WD,TLP_TYPE_CPL}
 `define TLP_REQ_WD          {TLP_FMT_REQ_WD,TLP_TYPE_REQ}
@@ -51,65 +54,43 @@ unions packed{
         logic [1                -1:0]   tlp_reserve2;
         logic [`TLP_TYPE_W      -1:0]   tlp_type    ;
         logic [`TLP_FMT_W       -1:0]   tlp_fmt     ;
-        logic [`TLP_F_DWBE_W    -1:0]   tlp_fdwbe   ;
-        logic [`TLP_L_DWBE_W    -1:0]   tlp_ldwbe   ;
-        logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
-        logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
-        logic [`TLP_ADDR4DW_W   -1:0]   tlp_addr    ;
-    }tlp_r4dw_t //4dw request tlp
-    struct packed{
-        logic [`TLP_LENGTH_W    -1:0]   tlp_length  ;
-        logic [`TLP_AT_W        -1:0]   tlp_at      ;
-        logic [`TLP_ATTR0_W     -1:0]   tlp_attr0   ;
-        logic [`TLP_EP_W        -1:0]   tlp_ep      ;
-        logic [`TLP_TD_W        -1:0]   tlp_td      ;
-        logic [`TLP_TH_W        -1:0]   tlp_th      ;
-        logic [1                -1:0]   tlp_reserve0;
-        logic [`TLP_ATTR1_W     -1:0]   tlp_attr1   ;
-        logic [1                -1:0]   tlp_reserve1;
-        logic [`TLP_TC_W        -1:0]   tlp_tc      ;
-        logic [1                -1:0]   tlp_reserve2;
-        logic [`TLP_TYPE_W      -1:0]   tlp_type    ;
-        logic [`TLP_FMT_W       -1:0]   tlp_fmt     ;
-        logic [`TLP_F_DWBE_W    -1:0]   tlp_fdwbe   ;
-        logic [`TLP_L_DWBE_W    -1:0]   tlp_ldwbe   ;
-        logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
-        logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
-        logic [`TLP_ADDR3DW_W   -1:0]   tlp_addr    ;
-        logic [32               -1:0]   tlp_reserve3;
-    }tlp_r3dw_t //3dw request tlp
-    struct packed{
-        logic [`TLP_LENGTH_W    -1:0]   tlp_length  ;
-        logic [`TLP_AT_W        -1:0]   tlp_at      ;
-        logic [`TLP_ATTR0_W     -1:0]   tlp_attr0   ;
-        logic [`TLP_EP_W        -1:0]   tlp_ep      ;
-        logic [`TLP_TD_W        -1:0]   tlp_td      ;
-        logic [`TLP_TH_W        -1:0]   tlp_th      ;
-        logic [1                -1:0]   tlp_reserve0;
-        logic [`TLP_ATTR1_W     -1:0]   tlp_attr1   ;
-        logic [1                -1:0]   tlp_reserve1;
-        logic [`TLP_TC_W        -1:0]   tlp_tc      ;
-        logic [1                -1:0]   tlp_reserve2;
-        logic [`TLP_TYPE_W      -1:0]   tlp_type    ;
-        logic [`TLP_FMT_W       -1:0]   tlp_fmt     ;
-        logic [`TLP_BC_W        -1:0]   tlp_byte_cnt;
-        logic [`TLP_BCM_W       -1:0]   tlp_bcm     ;
-        logic [`TLP_CMPSTA      -1:0]   tlp_cmpsta  ;
-        logic [`TLP_CMPLETERID  -1:0]   tlp_cmplt   ;
-        logic [`LOWADDR         -1:0]   tlp_laddr   ;
-        logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
-        logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
-        logic [32               -1:0]   tlp_reserve3;
-    }tlp_c_t //completion tlp
+        unions packed{
+            struct packed{
+                logic [`TLP_F_DWBE_W    -1:0]   tlp_fdwbe   ;
+                logic [`TLP_L_DWBE_W    -1:0]   tlp_ldwbe   ;
+                logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
+                logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
+                logic [`TLP_ADDR4DW_W   -1:0]   tlp_addr    ;
+            }tlp_r4dw_t;
+            struct packed{
+                logic [`TLP_F_DWBE_W    -1:0]   tlp_fdwbe   ;
+                logic [`TLP_L_DWBE_W    -1:0]   tlp_ldwbe   ;
+                logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
+                logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
+                logic [`TLP_ADDR3DW_W   -1:0]   tlp_addr    ;
+                logic [32               -1:0]   tlp_reserve3;
+            }tlp_r3dw_t;
+            struct packed{
+                logic [`TLP_BC_W        -1:0]   tlp_byte_cnt;
+                logic [`TLP_BCM_W       -1:0]   tlp_bcm     ;
+                logic [`TLP_CMPSTA      -1:0]   tlp_cmpsta  ;
+                logic [`TLP_CMPLETERID  -1:0]   tlp_cmplt   ;
+                logic [`LOWADDR         -1:0]   tlp_laddr   ;
+                logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
+                logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
+                logic [32               -1:0]   tlp_reserve3;
+            }tlp_c_t;
+        }tlp_htail;
+    }tlp_h;
     struct packed{
         logic [4 -1:0] [32  -1:0] dat;
-    }tlp_32b_t
+    }tlp_32b_t;
     struct packed{
         logic [2 -1:0] [64  -1:0] dat;
-    }tlp_64b_t
+    }tlp_64b_t;
     struct packed{
         logic [1 -1:0] [128 -1:0] dat;
-    }tlp_128b_t
+    }tlp_128b_t;
 } tlp_head_t;
 
 `endif
