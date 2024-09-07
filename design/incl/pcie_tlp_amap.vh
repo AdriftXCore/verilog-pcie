@@ -1,0 +1,12 @@
+`ifndef _PCIE_TLP_AMAP_VH
+`define _PCIE_TLP_AMAP_VH 1
+
+`define DATA_OFFSET_I 2
+`define DATA_OFFSET_W 4
+`define DATA_OFFSET_R (DATA_OFFSET_I+:DATA_OFFSET_W)
+
+`define CHANNEL_NUM_I 6
+`define CHANNEL_NUM_W 4
+`define CHANNEL_NUM_R (CHANNEL_NUM_I +: CHANNEL_NUM_W)
+
+`endif

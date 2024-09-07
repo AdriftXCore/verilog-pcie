@@ -12,5 +12,6 @@
 
 `define rst_block posedge clk
 `define rst rst
+`define fifo_rst rst
 
 `endif

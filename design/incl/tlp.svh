@@ -71,6 +71,13 @@ unions packed{
                 logic [32               -1:0]   tlp_reserve3;
             }tlp_r3dw_t;
             struct packed{
+                logic [`TLP_F_DWBE_W    -1:0]   tlp_fdwbe   ;
+                logic [`TLP_L_DWBE_W    -1:0]   tlp_ldwbe   ;
+                logic [`TLP_TAG_W       -1:0]   tlp_tag     ;
+                logic [`TLP_REQID_W     -1:0]   tlp_reqid   ;
+                logic [`TLP_ADDR4DW_W   -1:0]   tlp_addr    ;
+            }tlp_r_t;
+            struct packed{
                 logic [`TLP_BC_W        -1:0]   tlp_byte_cnt;
                 logic [`TLP_BCM_W       -1:0]   tlp_bcm     ;
                 logic [`TLP_CMPSTA      -1:0]   tlp_cmpsta  ;
