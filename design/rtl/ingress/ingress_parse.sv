@@ -27,6 +27,7 @@ defined in the table below.
 0101 = Length of SG buffer for TX transaction                        (Write only)
 0110 = PC low address of SG buffer for TX transaction                (Write only)
 0111 = PC high address of SG buffer for TX transaction               (Write only)
+
 1000 = Transfer length for TX transaction                            (Read only) (ACK'd on read)
 1001 = Offset/Last for TX transaction                                (Read only)
 1010 = Link rate, link width, bus master enabled, number of channels (Read only)
@@ -64,6 +65,7 @@ module ingress_parse(
     output  logic                               m_axis_tx_tvalid    ,
     output  logic [`PCIE_TUSER_W        -1:0]   m_axis_tx_tuser     ,
 );
+
 
 
 endmodule
