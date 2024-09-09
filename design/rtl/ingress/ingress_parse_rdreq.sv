@@ -67,7 +67,7 @@ always_ff @(`rst_block)begin
     else if(rdreq_valid && rdreq_rdy)
         rd_tdest[0+:4] <= rdreq_meta.tlp_head_t.tlp_htail.tlp_r_t[CHANNEL_NUM_R];
         rd_req         <= 1'b1;
-        case(rdreq_meta.tlp_head_t.tlp_htail.tlp_r_t[DATA_OFFSET_R])
+        case(rdreq_meta.tlp_head_t.tlp_htail.tlp_r_t[`DATA_OFFSET_R])
             //tx
             4'b1000:rd_tdest[4+:5] <= {3'b000,2'b00}; //Transfer length for TX transaction
             4'b1001:rd_tdest[4+:5] <= {3'b001,2'b00}; //Offset/Last

@@ -20,6 +20,15 @@ Description     : Distribute write request packages to each action module.
 0101 = Length of SG buffer for TX transaction                        (Write only)
 0110 = PC low address of SG buffer for TX transaction                (Write only)
 0111 = PC high address of SG buffer for TX transaction               (Write only)
+
+tx/rx
+000 = Transfer length transaction
+001 = Offset/Last transaction     
+010 = Transferred length
+011 = Length of SG buffer
+100 = PC low address of SG buffer
+101 = PC high address of SG buffer
+
 =======================================UPDATE HISTPRY==========================================
 Modified by     : 
 Modified date   : 
@@ -39,10 +48,38 @@ module ingress_parse_wrreq(
     output  logic                                     wrreq_rdy   ,
 
     output  logic                                     wr_req      ,
-    output  logic        [10                  -1:0]   wr_tdest     //{register,action,channel}  
+    output  logic       [10                   -1:0]   wr_tdest    ,//{register,action,channel}  
+    output  logic       [32                   -1:0]   wr_tdata     
 );
 
 assign wrreq_rdy = 1;
 
+always_ff @(`rst_block)begin
+    if(`rst)begin
+        wr_req   <= 'd0;
+        wr_tdest <= 'd0;
+        wr_tdata <= 'd0;
+    end
+    else if(wrreq_valid && wrreq_rdy)begin
+        wr_tdest[0+:4] <= wrreq_meta.tlp_head_t.tlp_htail.tlp_r_t[CHANNEL_NUM_R];
+        wr_req         <= 1'b1;
+        wr_tdata       <= wrreq_data[32-1:0];
+        case(rdreq_meta.tlp_head_t.tlp_htail.tlp_r_t[`DATA_OFFSET_R])
+            //tx
+            4'b0101:wr_tdest[4+:5] <= {3'b011,2'b00};//Length of SG buffer for TX transaction
+            4'b0110:wr_tdest[4+:5] <= {3'b100,2'b00};//PC low address of SG buffer for TX transaction
+            4'b0111:wr_tdest[4+:5] <= {3'b101,2'b00};//PC high address of SG buffer for TX transaction
+
+            //rx
+            4'b0000:wr_tdest[4+:5] <= {3'b011,2'b01};//Length of SG buffer for RX transaction
+            4'b0001:wr_tdest[4+:5] <= {3'b100,2'b01};//PC low address of SG buffer for RX transaction
+            4'b0010:wr_tdest[4+:5] <= {3'b101,2'b01};//PC high address of SG buffer for RX transaction
+            4'b0011:wr_tdest[4+:5] <= {3'b000,2'b01};//Transfer length for RX transaction
+            4'b0100:wr_tdest[4+:5] <= {3'b001,2'b01};//Offset/Last for RX transaction
+
+            //global register
+        endcase
+    end
+end
 
 endmodule
