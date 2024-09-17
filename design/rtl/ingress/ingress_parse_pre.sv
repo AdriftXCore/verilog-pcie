@@ -26,7 +26,7 @@ module ingress_parse_pre #(
 (
     /********* system clock / reset *********/
     input   wire                                      clk                 ,   //system clock
-    input   wire                                      `rst                ,   //reset signal
+    input   wire                                      `rst_nm             ,   //reset signal
 
     /********* pcie axiif *********/
     output  logic                                     s_axis_rx_tready    ,

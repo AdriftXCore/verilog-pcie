@@ -45,7 +45,7 @@ Description     :
 module ingress_parse(
     /********* system clock / reset *********/
     input   wire                                clk                 ,   //system clock
-    input   wire                                `rst                ,   //reset signal
+    input   wire                                `rst_nm             ,   //reset signal
 
     /*********  *********/
     output  logic                               s_axis_rx_tready    ,

@@ -24,7 +24,7 @@ module ingress_trans  #(
 (
     /********* system clock / reset *********/
     input   logic                               clk                 ,   //system clock
-    input   logic                               `rst                ,   //reset signal
+    input   logic                               `rst_nm             ,   //reset signal
     /********* config debug *********/
     output  logic [32                   -1:0]   rx_packet_len       ,  
     output  logic [32                   -1:0]   rx_sop_cnt          ,

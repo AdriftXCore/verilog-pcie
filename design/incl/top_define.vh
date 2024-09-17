@@ -11,7 +11,9 @@
 `define PCIE_TUSER_W    4
 
 `define rst_block posedge clk
+`define rst_nm rst
 `define rst rst
 `define fifo_rst rst
+`define ram_rst ~rst
 
 `endif

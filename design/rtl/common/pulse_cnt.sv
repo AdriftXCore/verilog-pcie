@@ -21,7 +21,7 @@ module pulse_cnt #(
 )(
     /********* system clock / reset *********/
     input   logic                       clk    ,   //system clock
-    input   logic                       `rst   ,   //reset signal
+    input   logic                       `rst_nm,   //reset signal
 
     input   logic                       clc    ,
     input   logic                       d_i    ,

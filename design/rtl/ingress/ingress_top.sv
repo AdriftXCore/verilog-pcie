@@ -22,7 +22,7 @@ Description     :
 module ingress_top(
     /********* system clock / reset *********/
     input   logic                               clk                 ,   //system clock
-    input   logic                               `rst                 ,   //reset signal
+    input   logic                               `rst_nm             ,   //reset signal
 
     /********* pcie if rx*********/
     output  logic                               s_axis_rx_tready    ,

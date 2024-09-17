@@ -44,7 +44,7 @@ Description     :
 module ingress_parse_rdreq(
     /********* system clock / reset *********/
     input   logic                                     clk         ,   //system clock
-    input   logic                                     `rst        ,   //reset signal
+    input   logic                                     `rst_nm     ,   //reset signal
 
     /********* parse_pre in *********/
     input   logic       [`PCIE_DATA_WIDTH     -1:0]   rdreq_data  ,

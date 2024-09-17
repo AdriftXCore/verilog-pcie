@@ -20,7 +20,6 @@ Description     :
 module  fifo_wrapper #(
     parameter   DEVICE             = "XILINX"            ,
     parameter   CLOCK_MODE         = "sync"              ,
-    parameter   IP                 = 1                   ,
     parameter   DEPTH              = 32                  ,   //depth
     parameter   DW                 = 32                  ,   //data width
     parameter   READ_MODE          = "fwft"              ,   //"std","fwft"
@@ -34,7 +33,7 @@ module  fifo_wrapper #(
 )
 (
     input  logic                   clk           ,
-    input  logic                   rst           , // high active
+    input  logic                   `rst_nm       , // high active
 
     input  logic                   wr_en         ,
     input  logic  [DW  -1 : 0]     din           ,
@@ -55,7 +54,7 @@ module  fifo_wrapper #(
 
 generate 
 /**************************************************************************************************************************************************/
-    if((DEVICE == "XILINX") && CLOCK_MODE == "sync" && (IP == 1))begin
+    if((DEVICE == "XILINX") && CLOCK_MODE == "sync")begin
     xpm_fifo_sync #(
       .DOUT_RESET_VALUE       ( "0"               ) , // String
       .ECC_MODE               ( "no_ecc"          ) , // String
@@ -149,7 +148,7 @@ generate
                                      // signal causes data (on dout) to be read from the FIFO. Must be held
                                      // active-low when rd_rst_busy is active high.
 
-      .rst(rst),                     // 1-bit input: Reset: Must be synchronous to wr_clk. The clock(s) can be
+      .rst(`fifo_rst),               // 1-bit input: Reset: Must be synchronous to wr_clk. The clock(s) can be
                                      // unstable at the time of applying reset, but reset must be released only
                                      // after the clock(s) is/are stable.
 
@@ -562,5 +561,5 @@ endmodule
 
 //    // End of xpm_fifo_sync_inst instantiation
 
-/**************************************************************************************************************************************************/
-end
+end/**************************************************************************************************************************************************/
+endgenerate
