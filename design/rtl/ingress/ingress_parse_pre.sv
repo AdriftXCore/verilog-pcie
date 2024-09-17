@@ -51,6 +51,8 @@ module ingress_parse_pre #(
     input   logic                                     rdreq_rdy           ,
 
     output  logic       [`PCIE_DATA_WIDTH     -1:0]   cpl_data            ,
+    output  logic                                     cpl_sop             ,
+    output  logic                                     cpl_eop             ,
     output  logic       [`PCIE_DATA_KW        -1:0]   cpl_keep            ,
     output  tlp_head_t                                cpl_meta            ,
     output  logic                                     cpl_valid           ,
@@ -62,6 +64,8 @@ logic                                       rdreq_req    ;
 logic                                       cpl_req      ;
 
 logic       [`PCIE_DATA_WIDTH     -1:0]     data         ;
+logic                                       sop          ;
+logic                                       eop          ;
 logic       [`PCIE_DATA_KW        -1:0]     keep         ;
 tlp_head_t                                  meta         ;
 logic                                       valid        ;
@@ -269,6 +273,8 @@ if(`PCIE_TUSER_W == 128)begin
     assign fifo_rd_en = ~fifo_empty && rdy;
 
     assign {wrreq_data,wrreq_keep,wrreq_meta.tlp_128b_t.dat[0]} = fifo_dout[FIFO_WIDTH-1:3];
+    assign {rdreq_data,rdreq_keep,wrreq_meta.tlp_128b_t.dat[0]} = fifo_dout[FIFO_WIDTH-1:3];
+    assign {cpl_data  ,cpl_keep  ,cpl_meta.tlp_128b_t.dat[0]  } = fifo_dout[FIFO_WIDTH-1:3];
     assign {wrreq_valid,rdreq_valid,cpl_valid} = fifo_dout[FIFO_TDEST_I+:TDEST_W];
 end
 else if(`PCIE_TUSER_W == 64)begin
